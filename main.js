@@ -1,29 +1,37 @@
-let title = 'my title';
-let screens = 'Simple, Problem, Interactive';
-let screenPrice = 10000;
-let rollback = 70;
-let fullPrice = 100000;
-let adaptive = true;
+let title = prompt('Как называется ваш проект?', 'Ваш проект');
+let screens = prompt(
+  'Какие типы экранов нужно разработать?',
+  'Simple? Problem? Interactive?',
+);
+let screenPrice = +prompt('Сколько будет стоить данная работа?', '20000');
+let rollback = 2;
+let adaptive = alert('Нужен ли адаптив на сайте?');
+let service1 = prompt('Какой доп тип услуги нужен?', 'Ремонт');
+let servicePrice1 = +prompt('Сколько это будет стоить?', '2000');
+let service2 = prompt('Какой доп тип услуги нужен?', 'Прочистка');
+let servicePrice2 = +prompt('Сколько это будет стоить?', '1600');
 
-// find data types (title, fullPrice, adaptive)
-console.log(typeof title);
-console.log(typeof fullPrice);
-console.log(typeof adaptive);
+// price full job
+let fullPrice = screenPrice + servicePrice1 + servicePrice2;
 
-// find lenght of the string
-console.log(screens.length);
+// percentage to the intermediary
+let persentageAmount = fullPrice * (rollback / 100);
 
-// cost of layout
-console.log(`Стоимость верстки экранов ${screenPrice} рублей`);
+// final sum with percent my ontermediary
+let servicePercentPrice = fullPrice - persentageAmount;
 
-// cost of development
-console.log(`Стоимость разработки сайтов ${fullPrice} рублей`);
+// added in console servicePercentPrice around
+console.log(Math.ceil(servicePercentPrice));
 
-// turn string -> array with ', '
-screens.split(', ');
+// full price in consol log
+console.log(`Цена за работу ${fullPrice}`);
 
-// transform screens -> to lower case
-console.log(screens.toLowerCase());
-
-// find percentage of the amount
-console.log(fullPrice * (rollback / 100));
+if (fullPrice >= 30000) {
+  console.log('Скидка в 10%');
+} else if (fullPrice >= 15000 && fullPrice < 30000) {
+  console.log('Скидка в 5%');
+} else if (fullPrice < 15000) {
+  console.log('Скидка не предусмотрена');
+} else {
+  console.log('Что то пошло не так');
+}
