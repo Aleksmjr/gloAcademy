@@ -5,33 +5,55 @@ let screens = prompt(
 );
 let screenPrice = +prompt('Сколько будет стоить данная работа?', '20000');
 let rollback = 2;
-let adaptive = alert('Нужен ли адаптив на сайте?');
+let adaptive = confirm('Нужен ли адаптив на сайте?');
 let service1 = prompt('Какой доп тип услуги нужен?', 'Ремонт');
 let servicePrice1 = +prompt('Сколько это будет стоить?', '2000');
 let service2 = prompt('Какой доп тип услуги нужен?', 'Прочистка');
 let servicePrice2 = +prompt('Сколько это будет стоить?', '1600');
 
-// price full job
-let fullPrice = screenPrice + servicePrice1 + servicePrice2;
+const showTypeof = function (variable) {
+  console.log(variable, typeof variable);
+};
 
-// percentage to the intermediary
-let persentageAmount = fullPrice * (rollback / 100);
+const getRollbackMessage = function (price) {
+  if (price >= 30000) {
+    return 'Скидка в 10%';
+  } else if (price >= 15000 && price < 30000) {
+    return 'Скидка в 5%';
+  } else if (price < 15000) {
+    return 'Скидка не предусмотрена';
+  } else {
+    return 'Что-то пошло не так';
+  }
+};
+console.log(getRollbackMessage(fullPrice));
 
-// final sum with percent my ontermediary
-let servicePercentPrice = fullPrice - persentageAmount;
+showTypeof(title);
+showTypeof(screenPrice);
+showTypeof(adaptive);
 
-// added in console servicePercentPrice around
-console.log(Math.ceil(servicePercentPrice));
+//1)
+let getAllServicePrices = function () {
+  return servicePrice1 + servicePrice2;
+};
+let allServicePrices = getAllServicePrices();
 
-// full price in consol log
-console.log(`Цена за работу ${fullPrice}`);
-
-if (fullPrice >= 30000) {
-  console.log('Скидка в 10%');
-} else if (fullPrice >= 15000 && fullPrice < 30000) {
-  console.log('Скидка в 5%');
-} else if (fullPrice < 15000) {
-  console.log('Скидка не предусмотрена');
-} else {
-  console.log('Что то пошло не так');
+//2)
+function getFullPrice(screenPrice, allServicePrices) {
+  return screenPrice + allServicePrices;
 }
+
+let fullPrice = getFullPrice(screenPrice, allServicePrices);
+
+//3)
+function getTitle(title) {
+  return title.trim()[0].toUpperCase() + title.trim().toLowerCase().slice(1);
+}
+
+title = getTitle(title);
+
+//4)
+function getServicePercentPrices() {
+  return Math.ceil(fullPrice - fullPrice * (rollback / 100));
+}
+let servicePercentPrices = getServicePercentPrices();
