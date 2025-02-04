@@ -57,16 +57,21 @@ const appData = {
       do {
         price = prompt(`Сколько это будет стоить?`, '2000');
       } while (!isNumber(price));
-
-      appData.services[name] = +price;
+      let key = name;
+      let counter = 1;
+      while (appData.services.hasOwnProperty(key)) {
+        key = `${name}_${counter}`;
+        counter++;
+      }
+      appData.services[key] = +price;
     }
     appData.adaptive = confirm('Нужен ли адаптив на сайте?');
   },
   // функция доп (метод )
   addPrices: function () {
-    for (let screen of appData.screens) {
-      appData.screenPrice += +screen.price;
-    }
+    appData.screenPrice = appData.screens.reduce(function (total, screen) {
+      return total + +screen.price;
+    }, 0);
     for (let key in appData.services) {
       appData.allServicePrices += appData.services[key];
     }
@@ -105,6 +110,7 @@ const appData = {
     console.log(appData.fullPrice);
     console.log(appData.servicePercentPrices);
     console.log(appData.screens);
+    console.log(appData.services);
   },
 };
 //
