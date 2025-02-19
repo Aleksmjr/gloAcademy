@@ -31,9 +31,17 @@ const appData = {
   servicesNumber: {},
   init: function () {
     appData.addTitle();
-
-    startBtn.addEventListener('click', appData.start);
-    buttonPlus.addEventListener('click', appData.addScreenBlock);
+    appData.validateInputs();
+    startBtn.addEventListener('click', () => {
+      if (!startBtn.disabled) {
+        appData.start();
+      }
+    });
+    buttonPlus.addEventListener('click', () => {
+      appData.addScreenBlock();
+      appData.validateInputs();
+    });
+    document.addEventListener('input', appData.validateInputs);
   },
   addTitle: function () {
     document.title = title.textContent;
@@ -77,7 +85,7 @@ const appData = {
   },
   addScreens: function () {
     screens = document.querySelectorAll('.screen');
-
+    appData.screens = [];
     screens.forEach(function (screen, index) {
       const select = screen.querySelector('select');
       const input = screen.querySelector('input');
@@ -89,11 +97,18 @@ const appData = {
         price: +select.value * +input.value,
       });
     });
+    // заносим все наши экраны в переменную
+    screens.length = appData.screens;
+    console.log(appData.screens);
+    document.querySelector('#total-count').value = appData.screens.length;
   },
   // функция 2
 
   // функция доп (метод )
   addPrices: function () {
+    appData.screenPrice = 0;
+    appData.ServicePricesNumber = 0;
+    appData.ServicePricesPercent = 0;
     for (let screen of appData.screens) {
       appData.screenPrice += +screen.price;
     }
@@ -104,29 +119,20 @@ const appData = {
       appData.ServicePricesPercent +=
         appData.screenPrice * (appData.servicesPercent[key] / 100);
     }
+
     appData.fullPrice =
       +appData.screenPrice +
       appData.ServicePricesNumber +
       appData.ServicePricesPercent;
-  },
-  // Функция 2
-  getRollbackMessage: function () {
-    if (appData.fullPrice >= 30000) {
-      return 'Скидка в 10%';
-    } else if (appData.fullPrice >= 15000 && appData.fullPrice < 30000) {
-      return 'Скидка в 5%';
-    } else if (appData.fullPrice < 15000) {
-      return 'Скидка не предусмотрена';
-    } else {
-      return 'Что-то пошло не так';
-    }
-  },
-
-  getServicePercentPrices: function () {
+    // c учетом отката посреднику
     appData.servicePercentPrices = Math.ceil(
       appData.fullPrice - appData.fullPrice * (appData.rollback / 100),
     );
+    document.querySelector('#total-count-rollback').value =
+      appData.servicePercentPrices;
   },
+
+  getServicePercentPrices: function () {},
   // функция 7
   logger: function () {
     console.log(appData.fullPrice);
@@ -134,7 +140,36 @@ const appData = {
     console.log(appData.screens);
     console.log(appData.services);
   },
+  // проверка на заполненность инпутов
+  validateInputs: function () {
+    screens = document.querySelectorAll('.screen');
+    let isValid = true;
+
+    screens.forEach((screen) => {
+      const select = screen.querySelector('select');
+      const input = screen.querySelector('input');
+
+      if (
+        select.value === '' ||
+        input.value.trim() === '' ||
+        isNaN(input.value) ||
+        +input.value <= 0
+      ) {
+        isValid = false;
+      }
+    });
+
+    startBtn.disabled = !isValid;
+  },
 };
-//
+//выключаем изначально кнопку, чтобы не тыкать
+startBtn.disabled = true;
+// вешаем на инпут событие, которое при передвижении ползунка заносит в спан инпута значения
+document
+  .querySelector('.rollback [type="range"]')
+  .addEventListener('input', function () {
+    document.querySelector('.range-value').textContent = this.value;
+    appData.rollback = this.value;
+  });
 
 appData.init();
