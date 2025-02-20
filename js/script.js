@@ -17,6 +17,9 @@ const totalCountRollback = document.getElementsByClassName('total-input')[4];
 
 let screens = document.querySelectorAll('.screen');
 
+// Флаг, отслеживающий, что расчет уже произведён
+let calculationDone = false;
+
 const appData = {
   title: '',
   screens: [],
@@ -35,6 +38,7 @@ const appData = {
     startBtn.addEventListener('click', () => {
       if (!startBtn.disabled) {
         appData.start();
+        calculationDone = true;
       }
     });
     buttonPlus.addEventListener('click', () => {
@@ -132,7 +136,6 @@ const appData = {
       appData.servicePercentPrices;
   },
 
-  getServicePercentPrices: function () {},
   // функция 7
   logger: function () {
     console.log(appData.fullPrice);
@@ -164,12 +167,19 @@ const appData = {
 };
 //выключаем изначально кнопку, чтобы не тыкать
 startBtn.disabled = true;
-// вешаем на инпут событие, которое при передвижении ползунка заносит в спан инпута значения
+// вешаем на инпут событие, которое при передвижении ползунка заносит в спан инпута значения и если расчет уже был произведен, то оно пересчитывает его в режиме реального времени
 document
   .querySelector('.rollback [type="range"]')
   .addEventListener('input', function () {
     document.querySelector('.range-value').textContent = this.value;
     appData.rollback = this.value;
+    if (calculationDone) {
+      appData.servicePercentPrices = Math.ceil(
+        appData.fullPrice - appData.fullPrice * (appData.rollback / 100),
+      );
+      document.querySelector('#total-count-rollback').value =
+        appData.servicePercentPrices;
+    }
   });
 
 appData.init();
