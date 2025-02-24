@@ -14,6 +14,9 @@ const totalCount = document.getElementsByClassName('total-input')[1];
 const totalCountOther = document.getElementsByClassName('total-input')[2];
 const fullTotalCount = document.getElementsByClassName('total-input')[3];
 const totalCountRollback = document.getElementsByClassName('total-input')[4];
+const selectAll = document.querySelector('select');
+const inputAll = document.querySelector('input[type="text"]');
+const checkAll = document.querySelector('input[type=checkbox]');
 
 let screens = document.querySelectorAll('.screen');
 
@@ -33,52 +36,111 @@ const appData = {
   servicesPercent: {},
   servicesNumber: {},
   init: function () {
-    appData.addTitle();
-    appData.validateInputs();
+    this.addTitle();
+    this.validateInputs();
     startBtn.addEventListener('click', () => {
-      if (!startBtn.disabled) {
-        appData.start();
+      if (!this.disabled) {
+        this.start();
         calculationDone = true;
       }
     });
     buttonPlus.addEventListener('click', () => {
-      appData.addScreenBlock();
-      appData.validateInputs();
+      this.addScreenBlock();
+      this.validateInputs();
     });
-    document.addEventListener('input', appData.validateInputs);
+    document.addEventListener('input', this.validateInputs);
   },
   addTitle: function () {
     document.title = title.textContent;
   },
   // функция 1
   start: function () {
-    appData.addScreens();
-    appData.addServices();
-    // appData.getServicePercentPrices() по дз
-    appData.addPrices();
-    appData.showResult();
+    this.addScreens();
+    this.addServices();
+    // this.getServicePercentPrices() по дз
+    this.addPrices();
+    this.showResult();
+    this.blockButtons();
+    this.reset();
+  },
+  reset: function () {
+    this.btnReset();
+  },
+  btnReset: function () {
+    resetBtn.addEventListener('click', (event) => {
+      // Блокируем инпуты и селекты в блоках экранов
+      screens.forEach((screen, index) => {
+        if (selectAll) selectAll.disabled = false;
+        if (inputAll) inputAll.disabled = false;
+
+        selectAll.selectedIndex = 0;
+        inputAll.value = '';
+      });
+
+      // Блокируем чекбоксы и инпуты в блоках дополнительных услуг
+      otherItemsPercent.forEach(() => {
+        if (checkAll) checkAll.disabled = false;
+        if (inputAll) inputAll.disabled = false;
+
+        checkAll.checked = false;
+        inputAll.value = '';
+      });
+
+      otherItemsNumber.forEach(() => {
+        if (checkAll) checkAll.disabled = false;
+        if (inputAll) inputAll.disabled = false;
+
+        checkAll.checked = false;
+        inputAll.value = '';
+      });
+      this.screens.forEach((screen, index) => {
+        if (index !== 0) {
+          screen.remove();
+        }
+      });
+      this.screens = [];
+      this.servicesPercent = {};
+      this.servicesNumber = {};
+      this.screenPrice = 0;
+      this.ServicePricesPercent = 0;
+      this.ServicePricesNumber = 0;
+      this.fullPrice = 0;
+      this.servicePercentPrices = 0;
+      calculationDone = false;
+
+      // Очищаем итоговые поля
+      total.value = '';
+      totalCount.value = '';
+      totalCountOther.value = '';
+      fullTotalCount.value = '';
+      totalCountRollback.value = '';
+      // Блокируем кнопку "Рассчитать"
+      startBtn.disabled = false;
+      resetBtn.style.display = 'none';
+      startBtn.style.display = 'block';
+    });
   },
   showResult: function () {
-    total.value = appData.screenPrice;
+    total.value = this.screenPrice;
     totalCountOther.value =
-      appData.ServicePricesPercent + appData.ServicePricesNumber;
-    fullTotalCount.value = appData.fullPrice;
+      this.ServicePricesPercent + this.ServicePricesNumber;
+    fullTotalCount.value = this.fullPrice;
   },
   addServices: function () {
-    otherItemsPercent.forEach(function (item) {
+    otherItemsPercent.forEach((item) => {
       const check = item.querySelector('input[type=checkbox]');
       const label = item.querySelector('label');
       const input = item.querySelector('input[type=text]');
       if (check.checked) {
-        appData.servicesPercent[label.textContent] = +input.value;
+        this.servicesPercent[label.textContent] = +input.value;
       }
     });
-    otherItemsNumber.forEach(function (item) {
+    otherItemsNumber.forEach((item) => {
       const check = item.querySelector('input[type=checkbox]');
       const label = item.querySelector('label');
       const input = item.querySelector('input[type=text]');
       if (check.checked) {
-        appData.servicesNumber[label.textContent] = +input.value;
+        this.servicesNumber[label.textContent] = +input.value;
       }
     });
   },
@@ -89,62 +151,53 @@ const appData = {
   },
   addScreens: function () {
     screens = document.querySelectorAll('.screen');
-    appData.screens = [];
-    screens.forEach(function (screen, index) {
+    this.screens = [];
+    screens.forEach((screen, index) => {
       const select = screen.querySelector('select');
       const input = screen.querySelector('input');
       const selectName = select.options[select.selectedIndex].textContent;
 
-      appData.screens.push({
+      this.screens.push({
         id: index,
         name: selectName,
         price: +select.value * +input.value,
       });
     });
     // заносим все наши экраны в переменную
-    screens.length = appData.screens;
-    console.log(appData.screens);
-    document.querySelector('#total-count').value = appData.screens.length;
+    screens.length = this.screens;
+    console.log(this.screens);
+    document.querySelector('#total-count').value = this.screens.length;
   },
   // функция 2
 
   // функция доп (метод )
   addPrices: function () {
-    appData.screenPrice = 0;
-    appData.ServicePricesNumber = 0;
-    appData.ServicePricesPercent = 0;
-    for (let screen of appData.screens) {
-      appData.screenPrice += +screen.price;
+    this.screenPrice = 0;
+    this.ServicePricesNumber = 0;
+    this.ServicePricesPercent = 0;
+    for (let screen of this.screens) {
+      this.screenPrice += +screen.price;
     }
-    for (let key in appData.servicesNumber) {
-      appData.ServicePricesNumber += appData.servicesNumber[key];
+    for (let key in this.servicesNumber) {
+      this.ServicePricesNumber += this.servicesNumber[key];
     }
-    for (let key in appData.servicesPercent) {
-      appData.ServicePricesPercent +=
-        appData.screenPrice * (appData.servicesPercent[key] / 100);
+    for (let key in this.servicesPercent) {
+      this.ServicePricesPercent +=
+        this.screenPrice * (this.servicesPercent[key] / 100);
     }
 
-    appData.fullPrice =
-      +appData.screenPrice +
-      appData.ServicePricesNumber +
-      appData.ServicePricesPercent;
+    this.fullPrice =
+      +this.screenPrice + this.ServicePricesNumber + this.ServicePricesPercent;
     // c учетом отката посреднику
-    appData.servicePercentPrices = Math.ceil(
-      appData.fullPrice - appData.fullPrice * (appData.rollback / 100),
+    this.servicePercentPrices = Math.ceil(
+      this.fullPrice - this.fullPrice * (this.rollback / 100),
     );
     document.querySelector('#total-count-rollback').value =
-      appData.servicePercentPrices;
+      this.servicePercentPrices;
   },
 
-  // функция 7
-  logger: function () {
-    console.log(appData.fullPrice);
-    console.log(appData.servicePercentPrices);
-    console.log(appData.screens);
-    console.log(appData.services);
-  },
   // проверка на заполненность инпутов
-  validateInputs: function () {
+  validateInputs: () => {
     screens = document.querySelectorAll('.screen');
     let isValid = true;
 
@@ -163,6 +216,30 @@ const appData = {
     });
 
     startBtn.disabled = !isValid;
+  },
+  // блокировка левой секции (с помощью чата ГПТ, к сожалению)
+  blockButtons: function () {
+    // Блокируем инпуты и селекты в блоках экранов
+    screens.forEach((screen) => {
+      if (selectAll) selectAll.disabled = true;
+      if (inputAll) inputAll.disabled = true;
+    });
+
+    // Блокируем чекбоксы и инпуты в блоках дополнительных услуг
+    otherItemsPercent.forEach((item) => {
+      if (checkAll) checkAll.disabled = true;
+      if (inputAll) inputAll.disabled = true;
+    });
+
+    otherItemsNumber.forEach((item) => {
+      if (checkAll) checkAll.disabled = true;
+      if (inputAll) inputAll.disabled = true;
+    });
+
+    // Блокируем кнопку "Рассчитать"
+    startBtn.disabled = true;
+    startBtn.style.display = 'none';
+    resetBtn.style.display = 'block';
   },
 };
 //выключаем изначально кнопку, чтобы не тыкать
