@@ -76,9 +76,9 @@ const appData = {
     // по клику на кнопку клонируем блоки (аддСкринБлок)
     this.$plus.addEventListener('click', () => this.addScreenBlock());
     // записываем % отката в rollbackVal (span)
-    this.$rollbackInput.addEventListener('input', (event) => {
-      this.$rollbackVal.textContent = event.target.value + `%`;
-    });
+    // this.$rollbackInput.addEventListener('input', (event) => {
+    //   this.$rollbackVal.textContent = event.target.value + `%`;
+    // });
     this.$buttonStart.addEventListener('click', (e) => {
       this.start();
       e.target.style.display = 'none';
@@ -86,7 +86,9 @@ const appData = {
       this.$plus.setAttribute('disabled', '');
 
       // console.log(document.querySelectorAll('input:not([disabled])'));
-      this.disabledInputs = document.querySelectorAll('input:not([disabled])');
+      this.disabledInputs = document.querySelectorAll(
+        'input:not([disabled]):not([type="range"])',
+      );
       this.disabledInputs.forEach((el) => {
         el.setAttribute('disabled', '');
       });
@@ -101,7 +103,23 @@ const appData = {
     });
     // инпут в реалиях
     this.$rollbackInput.addEventListener('input', (event) => {
+      // Получаем текущее значение ползунка
       this.rollbackAmmount = event.target.value;
+
+      // Обновляем текст рядом с ползунком
+      this.$rollbackVal.textContent = this.rollbackAmmount + '%';
+
+      // Пересчитываем итоговую стоимость с учетом отката
+      if (this.totalScreensPrice !== undefined) {
+        this.fullPrice =
+          this.totalScreensPrice +
+          (this.totalCountOther || 0) -
+          (this.totalScreensPrice + (this.totalCountOther || 0)) *
+            (this.rollbackAmmount / 100);
+
+        // Обновляем поле "Стоимость с учетом отката"
+        this.$inputTotalCountRollback.value = this.fullPrice;
+      }
     });
   },
 
@@ -125,6 +143,7 @@ const appData = {
     this.$checkboxes.forEach((checkbox) => {
       checkbox.checked = false;
     });
+    this.$inputTotalCountOther.value = 0;
   },
 
   addScreens: function () {
@@ -155,45 +174,49 @@ const appData = {
       0,
     );
 
-    // Переменная для хранения стоимости дополнительных услуг
+    // Переменная для хранения стоимости доп. услуг
     let additionalServicesPrice = 0;
 
-    this.$checkboxes.forEach((el) => {
-      if (el.checked) {
-        const parentItem = el.closest('.main-controls__item');
-        const mainControlsInput =
-          parentItem.querySelector('input[type="text"]');
+    // Обрабатываем чекбоксы с процентами (класс percent)
+    this.$otherItemsPercent.forEach((el) => {
+      const checkbox = el.querySelector('input[type="checkbox"]'); // Находим чекбокс
+      const input = el.querySelector('input[type="text"]'); // Находим инпут
 
-        if (mainControlsInput) {
-          const inputValue = parseFloat(mainControlsInput.value) || 0;
-
-          if (el.id === 'checkbox-1' || el.id === 'checkbox-2') {
-            // Для чекбоксов с адаптацией под планшеты и мобильные
-            additionalServicesPrice +=
-              this.totalScreensPrice * (inputValue / 100);
-          } else {
-            // Для остальных чекбоксов добавляем значение из инпута как есть
-            additionalServicesPrice += inputValue;
-          }
-        }
+      // Если чекбокс отмечен и есть инпут
+      if (checkbox.checked && input) {
+        additionalServicesPrice += this.totalScreensPrice * (input.value / 100); // Добавляем процент от общей суммы
       }
     });
 
-    // Добавляем стоимость дополнительных услуг к общей стоимости
-    this.totalScreensPrice += additionalServicesPrice;
+    // Обрабатываем чекбоксы с числами (класс number)
+    this.$otherItemsNumber.forEach((el) => {
+      const checkbox = el.querySelector('input[type="checkbox"]'); // Находим чекбокс
+      const input = el.querySelector('input[type="text"]'); // Находим инпут
+
+      // Если чекбокс отмечен и есть инпут
+      if (checkbox.checked && input) {
+        additionalServicesPrice += parseFloat(input.value);
+      }
+    });
+
+    // Записываем стоимость доп. услуг
+    this.totalCountOther = additionalServicesPrice;
 
     // Итоговая стоимость с учетом отката
     this.fullPrice =
-      this.totalScreensPrice -
-      this.totalScreensPrice * (this.rollbackAmmount / 100);
+      this.totalScreensPrice + // Общая стоимость верстки
+      (this.totalCountOther || 0) - // Стоимость доп. услуг
+      (this.totalScreensPrice + (this.totalCountOther || 0)) *
+        (this.rollbackAmmount / 100);
   },
   showResult: function () {
     // записывать итоговую стоимость
     this.$inputTotal.value = this.totalScreensPrice;
-    this.$inputTotalFullCount.value = this.totalScreensPrice;
+    this.$inputTotalFullCount.value =
+      this.totalScreensPrice + this.totalCountOther; // Итоговая стоимость с учетом доп. услуг
     this.$inputTotalCount.value = this.totalScreensAmmount;
+    this.$inputTotalCountOther.value = this.totalCountOther; // Стоимость доп. услуг
     this.$inputTotalCountRollback.value = this.fullPrice;
-    // this.$inputTotalCountOther.value = this.totalCountOther;
   },
   addScreenBlock: function () {
     // присваем КлонСкрину свойство клонирования (true - клонируем дочерние эл. тоже)
